@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Title</title>
+    </head>
+    <body>
+        <form th:action="@{/call}" method="post">
+            <div>
+                <label>End User ID:</label>
+                <input type="number" required th:field="*{deposit.endUserID}" /><br/>
+
+                <label>Message ID:</label>
+                <input type="number" required th:field="*{deposit.messageID}" /><br/>
+
+                <label>Attributes:</label>
+            </div>
+            <div>
+                <label>Сurrency:</label>
+                <input type="text" required th:field="*{attributes.currency}" /><br/>
+
+                <label>Firstname:</label>
+                <input type="text" required th:field="*{attributes.firstName}" /><br/>
+
+                <label>Lastname:</label>
+                <input type="text" required th:field="*{attributes.lastName}" /><br/>
+
+                <label>Country:</label>
+                <input type="text" required th:field="*{attributes.country}" /><br/>
+
+                <label>Locale:</label>
+                <input type="text" required th:field="*{attributes.locale}" /><br/>
+
+                <label>Email:</label>
+                <input type="email" required th:field="*{attributes.email}" /><br/>
+            </div>
+
+            <input type="submit" />
+        </form>
+    </body>
+</html>
