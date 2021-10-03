@@ -58,4 +58,15 @@ public class Deposit {
     public void setAttributes(Attributes attributes) {
         this.attributes = attributes;
     }
+
+    @Override
+    public String toString() {
+        return attributes.toString() +
+                "Username" + username +
+                "Password" + password +
+                "NotificationURL" + notificationURL +
+                "EndUserID" + endUserID +
+                "MessageID" + messageID +
+                "Attributes" + attributes;
+    }
 }

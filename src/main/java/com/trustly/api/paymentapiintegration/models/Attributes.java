@@ -55,4 +55,15 @@ public class Attributes {
     public void setEmail(String email) {
         this.email = email;
     }
+
+    @Override
+    public String toString() {
+        return "Attributes" +
+                "Currency" + currency +
+                "FirstName" + firstName +
+                "LastName" + lastName +
+                "Country" + country +
+                "Locale" + locale +
+                "Email" + email;
+    }
 }
