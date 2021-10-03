@@ -21,3 +21,4 @@ target/
 
 ### Certificates ###
 *.pem
+*.der
