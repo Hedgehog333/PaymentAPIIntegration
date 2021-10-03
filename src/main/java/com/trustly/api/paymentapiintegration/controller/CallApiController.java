@@ -1,9 +1,13 @@
 package com.trustly.api.paymentapiintegration.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import com.trustly.api.paymentapiintegration.dto.json.response.deposit.SuccessOrError;
+import com.trustly.api.paymentapiintegration.tools.RSA;
 import com.trustly.api.paymentapiintegration.tools.RestTemplateWithSSL;
 import com.trustly.api.paymentapiintegration.models.Attributes;
 import com.trustly.api.paymentapiintegration.models.Deposit;
@@ -15,6 +19,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.crypto.Cipher;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.PublicKey;
+
 @RestController
 public class CallApiController {
 
@@ -24,18 +34,28 @@ public class CallApiController {
     final String trustlyApiUrl = "https://test.trustly.com/api/1";
 
     @RequestMapping(value = "/call", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public String call(Deposit deposit, Attributes attributes) {
+    public String call(Deposit deposit, Attributes attributes, HttpServletResponse response) throws IOException {
         deposit.setAttributes(attributes);
         trustlyAPIDepositCredentials.setData(deposit);
 
+        generateSignature(deposit);
+
         String result;
         try {
-            result = RestTemplateWithSSL
+            SuccessOrError SOE = RestTemplateWithSSL
                     .getRestTemplateWithSSL(trustlyAPIDepositCredentials.getSignature())
                     .postForObject(
                             trustlyApiUrl,
                             makeJsonObject().toString(),
-                            String.class);
+                            SuccessOrError.class);
+
+            if (SOE.getResult() != null) {
+                //TODO: redirect to another page
+                result = "<iframe src=\"" + SOE.getResult().getData().getUrl() + "\"></iframe>";
+            } else {
+                ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+                result = ow.writeValueAsString(SOE.getError());
+            }
         } catch (Exception e) {
             result = e.getMessage();
         }
@@ -53,5 +73,25 @@ public class CallApiController {
         wrapper.add("params", content);
 
         return wrapper;
+    }
+
+    private void generateSignature(Deposit deposit) {
+        RSA rsa = new RSA();
+        try
+        {
+            PublicKey publicKey = rsa.readPublicKey("src/main/resources/public.der");
+
+            Cipher encryptCipher = Cipher.getInstance("RSA");
+            encryptCipher.init(Cipher.ENCRYPT_MODE, publicKey);
+
+            byte[] secretMessageBytes = deposit.toString().getBytes(StandardCharsets.UTF_8);
+            byte[] encryptedMessageBytes = encryptCipher.doFinal(secretMessageBytes);
+
+            trustlyAPIDepositCredentials.setSignature(new String(encryptedMessageBytes, StandardCharsets.UTF_8));
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 }
