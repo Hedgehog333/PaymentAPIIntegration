@@ -44,12 +44,6 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>de.dentrassi.crypto</groupId>
-            <artifactId>pem-keystore</artifactId>
-            <version>2.0.0</version>
-        </dependency>
     </dependencies>
 
     <build>

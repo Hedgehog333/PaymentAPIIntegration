@@ -8,7 +8,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.trustly.api.paymentapiintegration.dto.json.response.deposit.SuccessOrError;
 import com.trustly.api.paymentapiintegration.tools.RSA;
-import com.trustly.api.paymentapiintegration.tools.RestTemplateWithSSL;
+import com.trustly.api.paymentapiintegration.tools.RestTemplateMaker;
 import com.trustly.api.paymentapiintegration.models.Attributes;
 import com.trustly.api.paymentapiintegration.models.Deposit;
 import com.trustly.api.paymentapiintegration.models.TrustlyAPIDepositCredentials;
@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.crypto.Cipher;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
@@ -34,30 +33,27 @@ public class CallApiController {
     final String trustlyApiUrl = "https://test.trustly.com/api/1";
 
     @RequestMapping(value = "/call", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public String call(Deposit deposit, Attributes attributes, HttpServletResponse response) throws IOException {
+    public String call(Deposit deposit, Attributes attributes) throws IOException {
         deposit.setAttributes(attributes);
         trustlyAPIDepositCredentials.setData(deposit);
 
         generateSignature(deposit);
 
-        String result;
-        try {
-            SuccessOrError SOE = RestTemplateWithSSL
-                    .getRestTemplateWithSSL(trustlyAPIDepositCredentials.getSignature())
-                    .postForObject(
-                            trustlyApiUrl,
-                            makeJsonObject().toString(),
-                            SuccessOrError.class);
+        SuccessOrError SOE = RestTemplateMaker
+                .getRestTemplate()
+                .postForObject(
+                        trustlyApiUrl,
+                        makeJsonObject().toString(),
+                        SuccessOrError.class);
 
-            if (SOE.getResult() != null) {
-                //TODO: redirect to another page
-                result = "<iframe src=\"" + SOE.getResult().getData().getUrl() + "\"></iframe>";
-            } else {
-                ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-                result = ow.writeValueAsString(SOE.getError());
-            }
-        } catch (Exception e) {
-            result = e.getMessage();
+        String result;
+
+        if (SOE.getResult() != null) {
+            //TODO: redirect to another page
+            result = "<iframe src=\"" + SOE.getResult().getData().getUrl() + "\"></iframe>";
+        } else {
+            ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+            result = ow.writeValueAsString(SOE.getError());
         }
 
         return result;
@@ -75,6 +71,7 @@ public class CallApiController {
         return wrapper;
     }
 
+    //TODO: fix max length
     private void generateSignature(Deposit deposit) {
         RSA rsa = new RSA();
         try
