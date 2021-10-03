@@ -7,6 +7,12 @@
     <body>
         <form th:action="@{/call}" method="post">
             <div>
+                <label>User name:</label>
+                <input type="text" required th:field="*{deposit.username}" /><br/>
+
+                <label>Password:</label>
+                <input type="password" required th:field="*{deposit.password}" /><br/>
+
                 <label>End User ID:</label>
                 <input type="number" required th:field="*{deposit.endUserID}" /><br/>
 

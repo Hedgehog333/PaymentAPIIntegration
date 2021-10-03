@@ -1,18 +1,9 @@
 package com.trustly.api.paymentapiintegration.models;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
-
-@Component
 public class Deposit {
 
-    @Value("${trustly.username}")
     private String username;
 
-    @Value("${trustly.password}")
     private String password;
 
     private String notificationURL;
