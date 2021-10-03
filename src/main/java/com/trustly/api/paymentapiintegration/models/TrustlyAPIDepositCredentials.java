@@ -6,12 +6,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class TrustlyAPIDepositCredentials {
     @Value("${trustly.signature}")
-    public String signature;
+    private String signature;
 
     @Value("${trustly.uuid}")
     private String UUID;
 
     private Deposit data;
+
+    public TrustlyAPIDepositCredentials() {
+    }
 
     public TrustlyAPIDepositCredentials(Deposit data) {
 
